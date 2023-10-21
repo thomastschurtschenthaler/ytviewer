@@ -1,0 +1,33 @@
+{
+  "name": "yt-viewer",
+  "version": "1.0.0",
+  "description": "YTViewer",
+  "build": {
+    "productName": "YTViewer"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack --mode=production --node-env=production",
+    "build:dev": "webpack --mode=development",
+    "build:prod": "webpack --mode=production --node-env=production",
+    "watch": "webpack --watch"
+  },
+  "keywords": [
+    "Youtube",
+    "Viewer"
+  ],
+  "author": "Thomas Tschurtschenthaler",
+  "dependencies": {
+    "querystring-es3": "^0.2.1",
+    "stream-browserify": "^3.0.0",
+    "timers-browserify": "^2.0.12",
+    "vm-browserify": "^1.1.2",
+    "ytdl-core": "^4.11.5"
+  },
+  "devDependencies": {
+    "@webpack-cli/generators": "^3.0.7",
+    "copy-webpack-plugin": "^11.0.0",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}
