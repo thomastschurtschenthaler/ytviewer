@@ -29,7 +29,7 @@
             (async function init() {
                 let baseurl = window.location.href.substring(0, window.location.href.lastIndexOf("/")+1);
                 baseurl=baseurl.replace("raw.githack.com", "raw.githubusercontent.com");
-                let boookmarklet = "javascript:(async function(){ytdlbrowser = await(await fetch('"+baseurl+"ytdlbrowser.js')).text(); let ytviewer = await(await fetch('"+baseurl+"ytviewer.js')).text(); eval(ytdlbrowser+ytviewer);})();";
+                let boookmarklet = "javascript:(async function(){let ytdlbrowser = await(await fetch('"+baseurl+"ytdlbrowser.js')).text(); let ytviewer = await(await fetch('"+baseurl+"ytviewer.js')).text(); eval(ytdlbrowser+ytviewer);})();";
                 setTimeout(()=>{
                     document.getElementById("bmlink").setAttribute("href", boookmarklet);
                     document.getElementById("bmtxt").value=boookmarklet;

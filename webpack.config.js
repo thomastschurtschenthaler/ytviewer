@@ -2,6 +2,7 @@
 
 const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
+const WebpackConcatPlugin = require('webpack-concat-files-plugin');
 
 const config = {
     entry: './src/index.js',
@@ -10,10 +11,17 @@ const config = {
         filename: "ytdlbrowser.js"
     },
     plugins: [
+        new WebpackConcatPlugin({
+            bundles: [
+              {
+                dest: 'dist/ytviewer.js',
+                src: ['src/ytplayer.js', 'src/ytviewer.js']
+              },
+            ],
+        }),        
         new CopyPlugin({
             patterns: [
                 {from: path.resolve(__dirname, "src/ytviewer.html")},
-                {from: path.resolve(__dirname, "src/ytviewer.js")},
                 {from: path.resolve(__dirname, "src/bootstrap.min.css")},
                 {from: path.resolve(__dirname, "src/screen1.png")},
                 {from: path.resolve(__dirname, "src/screen2.png")},
@@ -29,7 +37,7 @@ const config = {
                 test: /\info.js$/,
                 use: [
                   {
-                    loader: path.resolve('ytinfooader.js'),
+                    loader: path.resolve('ytinfoloader.js'),
                     options: {
                       /* ... */
                     },

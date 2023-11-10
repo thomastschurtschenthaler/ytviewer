@@ -1,5 +1,7 @@
 # YTViewer - A youtube.com Viewer and Download Bookmarklet
 
+### NEW: High Resolutions for Browsers supporting Media Source Extension, e.g. Firefox, Chrome, Safari Desktop
+
 View and download ad-free youtube videos in the browser on your device (iOS supported!) - no third party service is needed.
 
 Follow the instructions here [https://raw.githack.com/thomastschurtschenthaler/ytviewer/main/dist/ytviewer.html](https://raw.githack.com/thomastschurtschenthaler/ytviewer/main/dist/ytviewer.html) to add the bookmarklet to your device.

@@ -34,7 +34,7 @@
         });
         player.appendChild(info);
         document.body.appendChild(player); 
-        let video=null; let buttons=null; let pvideoid=null;
+        let video=null; let buttons=null; let pvideoid=null; let ytplayer = null;
         let closeVideo = ()=>{
             if (video!=null) {
                 player.removeChild(video);
@@ -42,16 +42,17 @@
                 player.style.width="auto";
                 player.style.height="auto";
                 info.style.display="inline";
-                video=null; buttons=null;pvideoid=null;
+                ytplayer.destroy();
+                video=null; buttons=null;pvideoid=null; ytplayer=null;
             }
         };
         return {
             isplaying(videoid) {
                 return (videoid==pvideoid);
             },
-            play:async (videoid, videourl, videoinfos)=>{
+            play:async (videoid, videoinfos)=>{
                 closeVideo();
-                if (videourl==null) {
+                if (videoinfos==null) {
                     let ytinfo = null;
                     try {
                         ytinfo = await ytdl.getInfo(videoid, {});
@@ -59,37 +60,70 @@
                         player.innerHTML="Error:"+e;
                         return;
                     }
-                    console.log("videoInfo", ytinfo);
-                    let qualities = ["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "4320p"];
+                    let getQuality = (qualityLabel)=>{
+                        let r = "";
+                        if (qualityLabel==null) qualityLabel="144p";
+                        for (let i=0; i<qualityLabel.length; i++) {
+                            let d = qualityLabel.substring(i, i+1);
+                            if (d>="0" && d<="9") {
+                                r+=d;
+                            } else {
+                                return r*1;
+                            }
+                        }
+                    }
                     let qualitiessort = (f1, f2)=>{
-                        let q1 = qualities.indexOf(f1.qualityLabel);
-                        let q2 = qualities.indexOf(f2.qualityLabel);
-                        return q2-q1;
+                        return getQuality(f2.qualityLabel)-getQuality(f1.qualityLabel);
                     };
-                    let formatvideo=ytinfo.formats.filter((f)=>{return (f.hasAudio && f.hasVideo)}).sort(qualitiessort);
-                    console.log("formatvideo", formatvideo);
-                    videourl = formatvideo[0].url;
-                    videoinfos={"ytinfo":ytinfo, "formats":ytinfo.formats.filter((f)=>{return (!f.isHLS);}).sort(qualitiessort)};
+                    ytinfo.formats=ytinfo.formats.sort(qualitiessort);
+                    console.log("formats", ytinfo.formats);
+                    let audio = ytinfo.formats.filter((f)=>{return (!f.isHLS && f.hasAudio && !f.hasVideo);});
+                    let audiovideos = ytinfo.formats.filter((f)=>{return (f.hasAudio && f.hasVideo)});
+                    let audiovideo = audiovideos.length>0?audiovideos[0]:null;
+                    let vqualities = [];
+                    let video = ytinfo.formats.filter((f)=>{return (f.hasVideo && (window.MediaSource || f.hasAudio));})
+                        .filter((v)=>{if (vqualities.indexOf(v.qualityLabel)<0 && (audiovideo==null || v==audiovideo || v.qualityLabel!=audiovideo.qualityLabel)){vqualities.push(v.qualityLabel); return true;}; return false});
+                    videoinfos={"ytinfo":ytinfo, 
+                                "formats":ytinfo.formats.filter((f)=>{return (!f.isHLS);}),
+                                "audio":audio.length>0?audio[0]:null,
+                                "video":video,
+                                "quality":0,
+                                "audiovideo":audiovideo
+                                };
+                    console.log("videoinfos", videoinfos);
                 }
 
                 pvideoid=videoid;
                 player.style.width="100%";
                 player.style.height="100%";
                 info.style.display="none";
+
                 video = document.createElement("video");
                 video.setAttribute("controls", "true");
+                video.setAttribute("tabindex", "0");
                 video.setAttribute("width", "80%");
                 video.setAttribute("height", "80%");
                 video.style.marginLeft="10%";
                 video.style.marginTop="5%";
-                let videosrc = document.createElement("source");
-                videosrc.setAttribute("src", videourl);
-                videosrc.setAttribute("type", "video/mp4");
-                video.appendChild(videosrc);
                 player.appendChild(video);
-                video.load();
-                video.play();
-        
+                video.addEventListener("keydown", (e)=>{
+                    e.stopPropagation();
+                    if (e.key=="Escape") {
+                        e.preventDefault();
+                        closeVideo();
+                    } else if (e.key==" ") {
+                        e.preventDefault();
+                        if (video.paused) {
+                            video.play();
+                        } else {
+                            video.pause();
+                        }
+                    }
+                }, true);
+                video.focus();
+                ytplayer = new YTMSEPlayer(video);
+                ytplayer.play(videoinfos);
+
                 buttons = document.createElement("div");
                 buttons.style.position="absolute";
                 buttons.style.top="10px";
@@ -151,10 +185,10 @@
                     let dl = document.createElement("div");
                     dl.style.position="absolute";
                     dl.style.top="0px";
-                    dl.style.left="6rem";
+                    dl.style.left="19rem";
                     dl.style.width="2.4rem";
                     dl.style.height="1.8rem";
-                    dl.style.fontSize="1.5rem";
+                    dl.style.fontSize="1.4rem";
                     dl.style.backgroundColor="#8822aa";
                     dl.style.color="#eeeeee";
                     dl.style.cursor="pointer";
@@ -164,7 +198,7 @@
                     dl.addEventListener("click", (e)=>{
                         let formats = [];
                         let videoaudio = videoinfos.formats.filter((f)=>{return (f.hasAudio && f.hasVideo)});
-                        let video = videoinfos.formats.filter((f)=>{return (!f.hasAudio && f.hasVideo)});
+                        let video = videoinfos.formats.filter((f)=>{return (f.hasVideo)});
                         let audio = videoinfos.formats.filter((f)=>{return (f.hasAudio && !f.hasVideo)});
                         if (videoaudio.length>0) {videoaudio[0]._dltitle="_Video_and_Audio"; formats.push(videoaudio[0])};
                         if (video.length>0) {video[0]._dltitle="_Video"; formats.push(video[0])};
@@ -190,6 +224,35 @@
                     });
                     buttons.appendChild(dl);
                 }
+
+                let quality = document.createElement("select");
+                quality.style.position="absolute";
+                quality.style.top="0px";
+                quality.style.left="8rem";
+                quality.style.width="9rem";
+                quality.style.height="1.8rem";
+                quality.style.fontSize="1.3rem";
+                quality.style.backgroundColor="#2288aa";
+                quality.style.color="#eeeeee";
+                quality.style.cursor="pointer";
+                quality.style.borderRadius="1rem";
+                quality.style.border="0";
+                
+                for (let i=0;i<videoinfos.video.length;i++) {
+                    let vidsrc = videoinfos.video[i];
+                    let qo = document.createElement("option");
+                    qo.setAttribute("value", i+"");
+                    qo.innerText=vidsrc.qualityLabel;
+                    quality.appendChild(qo);
+                }
+                quality.addEventListener("change", (e)=>{
+                    videoinfos.quality = quality.value*1;
+                    let currentTime = video.currentTime;
+                    ytplayer.destroy();
+                    ytplayer.play(videoinfos, currentTime);
+                    video.focus();
+                });
+                buttons.appendChild(quality);
             }
         }
     }
@@ -198,6 +261,9 @@
         return;
     }
     if (window._ytviewer==null) {
+        let style=document.createElement('style');
+        style.innerText='video:focus, select:focus {outline: none;}';
+        document.body.appendChild(style);
         if (document.body!=null) {
             document.body.addEventListener("click", async (e)=>{
                 if (e.target.closest('a[href^="/watch?"]') || e.target.closest("ytd-thumbnail")) {
@@ -227,5 +293,4 @@
             window._ytviewer.play(videoid);
         }
     }
-    
 })();
