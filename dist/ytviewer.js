@@ -16,16 +16,12 @@
     function startSourceBuffer(sbCB, mediaSource, url, mimeType, contentLength, chunkSize, chunkCnt, startTime) {
         try {
             let sourceBuffer = mediaSource.addSourceBuffer(mimeType);
-            let updateendCb={finished:true, bussy:false}; let triggerTimeout=null; let stopped=false;
+            let updateendCb={finished:true, bussy:false}; let stopped=false;
             let loaded = {from:null, to:null, chunkSize:chunkSize, chunkCnt:chunkCnt, remStart:false, remEnd:false};
             sourceBuffer.addEventListener('updateend', function(e) {
                 //console.log("updateend");
                 if (stopped) return;
                 try {
-                    if (triggerTimeout!=null) {
-                        clearTimeout(triggerTimeout);
-                        triggerTimeout=null;
-                    }
                     if (!updateendCb.finished) {
                         updateendCb.cb();
                     } else {
@@ -291,7 +287,8 @@
             },
             play:async (videoid, videoinfos)=>{
                 closeVideo();
-                if (videoinfos==null) {
+
+                let getVideoInfos = async ()=> {
                     let ytinfo = null;
                     try {
                         ytinfo = await ytdl.getInfo(videoid, {});
@@ -322,14 +319,47 @@
                     let vqualities = [];
                     let video = ytinfo.formats.filter((f)=>{return (f.hasVideo && (window.MediaSource || f.hasAudio));})
                         .filter((v)=>{if (vqualities.indexOf(v.qualityLabel)<0 && (audiovideo==null || v==audiovideo || v.qualityLabel!=audiovideo.qualityLabel)){vqualities.push(v.qualityLabel); return true;}; return false});
-                    videoinfos={"ytinfo":ytinfo, 
+                    let _videoinfos={"ytinfo":ytinfo, 
                                 "formats":ytinfo.formats.filter((f)=>{return (!f.isHLS);}),
                                 "audio":audio.length>0?audio[0]:null,
                                 "video":video,
                                 "quality":0,
                                 "audiovideo":audiovideo
                                 };
-                    console.log("videoinfos", videoinfos);
+                    console.log("_videoinfos", _videoinfos);
+                    return _videoinfos;
+                }
+                if (videoinfos==null) {
+                    let retrycnt=0;
+                    let retry = async (resolve, err) => {
+                        retrycnt++;
+                        console.log("probe fetch error", err, retrycnt);
+                        if (retrycnt>=5) {
+                            console.log("probe fetch max retries reached");
+                            videoinfos.video[0]=videoinfos.audiovideo;
+                        } else {
+                            console.log("probe fetch retry #"+retrycnt);
+                            videoinfos = await getAndProbeVideoInfos();
+                            resolve(videoinfos);
+                        }
+                    };
+                    let getAndProbeVideoInfos = async () => {
+                        videoinfos = await getVideoInfos();
+                        if (!videoinfos.video[0].hasAudio && videoinfos.audio!=null) {
+                            return new Promise(resolve => {
+                                fetch(videoinfos.video[0].url+"&range=0-1000").then((r)=>{r.arrayBuffer().then((b)=>{
+                                    console.log("video probe success");
+                                    fetch(videoinfos.audio.url+"&range=0-1000").then((r)=>{r.arrayBuffer().then((b)=>{
+                                        console.log("audio probe success");
+                                        resolve(videoinfos);
+                                    }).catch(retry);}).catch((e)=>{retry(resolve, e);});
+                                }).catch(retry);}).catch((e)=>{retry(resolve, e);});
+                            
+                            });
+                        }
+                        return videoinfos;
+                    }
+                    videoinfos = await getAndProbeVideoInfos();
                 }
 
                 pvideoid=videoid;
