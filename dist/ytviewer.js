@@ -337,6 +337,7 @@
                         if (retrycnt>=5) {
                             console.log("probe fetch max retries reached");
                             videoinfos.video[0]=videoinfos.audiovideo;
+                            resolve(videoinfos);
                         } else {
                             console.log("probe fetch retry #"+retrycnt);
                             videoinfos = await getAndProbeVideoInfos();
