@@ -43,7 +43,18 @@ const config = {
                     },
                   },
                 ],
-              },
+            },
+            {
+              test: /sig.js$/,
+              use: [
+                {
+                  loader: path.resolve('ytsigloader.js'),
+                  options: {
+                    /* ... */
+                  },
+                },
+              ],
+          },
         ],
     },
     resolve: {

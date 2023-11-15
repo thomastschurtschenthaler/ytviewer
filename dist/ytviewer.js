@@ -313,11 +313,11 @@
                     };
                     ytinfo.formats=ytinfo.formats.sort(qualitiessort);
                     console.log("formats", ytinfo.formats);
-                    let audio = ytinfo.formats.filter((f)=>{return (!f.isHLS && f.hasAudio && !f.hasVideo);});
-                    let audiovideos = ytinfo.formats.filter((f)=>{return (f.hasAudio && f.hasVideo)});
+                    let audio = ytinfo.formats.filter((f)=>{return (f.mimeType.indexOf("audio")>=0);});
+                    let audiovideos = ytinfo.formats.filter((f)=>{return (f.audioQuality!=null && f.quality!=null)});
                     let audiovideo = audiovideos.length>0?audiovideos[0]:null;
                     let vqualities = [];
-                    let video = ytinfo.formats.filter((f)=>{return (f.hasVideo && (window.MediaSource || f.hasAudio));})
+                    let video = ytinfo.formats.filter((f)=>{return (f.mimeType.indexOf("video")>=0);})
                         .filter((v)=>{if (vqualities.indexOf(v.qualityLabel)<0 && (audiovideo==null || v==audiovideo || v.qualityLabel!=audiovideo.qualityLabel)){vqualities.push(v.qualityLabel); return true;}; return false});
                     let _videoinfos={"ytinfo":ytinfo, 
                                 "formats":ytinfo.formats.filter((f)=>{return (!f.isHLS);}),
