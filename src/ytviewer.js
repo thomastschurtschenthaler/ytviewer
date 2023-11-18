@@ -82,7 +82,7 @@
                     let audiovideos = ytinfo.formats.filter((f)=>{return ((f.hasAudio && f.hasVideo) || (f.audioQuality!=null && f.quality!=null))});
                     let audiovideo = audiovideos.length>0?audiovideos[0]:null;
                     let vqualities = [];
-                    let video = ytinfo.formats.filter((f)=>{return (f.hasVideo || (f.mimeType!=null && f.mimeType.indexOf("video")>=0) && (window.MediaSource || f.hasAudio || f.audioQuality!=null));})
+                    let video = ytinfo.formats.filter((f)=>{return ((f.hasVideo || (f.mimeType!=null && f.mimeType.indexOf("video")>=0)) && (window.MediaSource || f.hasAudio || f.audioQuality!=null));})
                         .filter((v)=>{if (vqualities.indexOf(v.qualityLabel)<0 && (audiovideo==null || v==audiovideo || v.qualityLabel!=audiovideo.qualityLabel)){vqualities.push(v.qualityLabel); return true;}; return false});
                     let _videoinfos={"ytinfo":ytinfo, 
                                 "formats":ytinfo.formats.filter((f)=>{return (!f.isHLS);}),
