@@ -140,7 +140,7 @@
     }
     let videoSb = null; let audioSb = null; let timeUpdate=null;
     function play(videoinfos, startTime) {
-        if (videoinfos.video[videoinfos.quality].hasAudio || videoinfos.video[videoinfos.quality].isHLS) {
+        if (videoinfos.video[videoinfos.quality].hasAudio || videoinfos.video[videoinfos.quality].audioQuality!=null || videoinfos.video[videoinfos.quality].isHLS) {
             console.log("audio and video");
             playNoMSE(this, videoinfos, startTime, videoinfos.video[videoinfos.quality]);
             return;
@@ -313,11 +313,11 @@
                     };
                     ytinfo.formats=ytinfo.formats.sort(qualitiessort);
                     console.log("formats", ytinfo.formats);
-                    let audio = ytinfo.formats.filter((f)=>{return (f.mimeType.indexOf("audio")>=0);});
-                    let audiovideos = ytinfo.formats.filter((f)=>{return (f.audioQuality!=null && f.quality!=null)});
+                    let audio = ytinfo.formats.filter((f)=>{return ((f.hasAudio && !f.hasVideo) || (f.mimeType!=null && f.mimeType.indexOf("audio")>=0));});
+                    let audiovideos = ytinfo.formats.filter((f)=>{return ((f.hasAudio && f.hasVideo) || (f.audioQuality!=null && f.quality!=null))});
                     let audiovideo = audiovideos.length>0?audiovideos[0]:null;
                     let vqualities = [];
-                    let video = ytinfo.formats.filter((f)=>{return (f.mimeType.indexOf("video")>=0);})
+                    let video = ytinfo.formats.filter((f)=>{return (f.hasVideo || (f.mimeType!=null && f.mimeType.indexOf("video")>=0) && (window.MediaSource || f.hasAudio || f.audioQuality!=null));})
                         .filter((v)=>{if (vqualities.indexOf(v.qualityLabel)<0 && (audiovideo==null || v==audiovideo || v.qualityLabel!=audiovideo.qualityLabel)){vqualities.push(v.qualityLabel); return true;}; return false});
                     let _videoinfos={"ytinfo":ytinfo, 
                                 "formats":ytinfo.formats.filter((f)=>{return (!f.isHLS);}),

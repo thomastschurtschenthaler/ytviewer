@@ -140,7 +140,7 @@
     }
     let videoSb = null; let audioSb = null; let timeUpdate=null;
     function play(videoinfos, startTime) {
-        if (videoinfos.video[videoinfos.quality].hasAudio || videoinfos.video[videoinfos.quality].isHLS) {
+        if (videoinfos.video[videoinfos.quality].hasAudio || videoinfos.video[videoinfos.quality].audioQuality!=null || videoinfos.video[videoinfos.quality].isHLS) {
             console.log("audio and video");
             playNoMSE(this, videoinfos, startTime, videoinfos.video[videoinfos.quality]);
             return;
