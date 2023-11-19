@@ -1,6 +1,9 @@
 (function() {
+    let _disableRemotePlayback = !window.MediaSource;
+    window.MediaSource=window.MediaSource || window.ManagedMediaSource;
     function playNoMSE(video, videoinfos, startTime, vsource) {
         console.log("playNoMSE");
+        video.disableRemotePlayback = false;
         video.removeAttribute("src");
         video.innerHTML="";
         let videosrc = document.createElement("source");
@@ -152,6 +155,7 @@
         }
         
         let video = this; let reloading=false;
+        video.disableRemotePlayback = _disableRemotePlayback;
         let mediaSource = new MediaSource();
         video.src = URL.createObjectURL(mediaSource);
         let reload=()=>{

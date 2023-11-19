@@ -1,6 +1,9 @@
 (function() {
+    let _disableRemotePlayback = !window.MediaSource;
+    window.MediaSource=window.MediaSource || window.ManagedMediaSource;
     function playNoMSE(video, videoinfos, startTime, vsource) {
         console.log("playNoMSE");
+        video.disableRemotePlayback = false;
         video.removeAttribute("src");
         video.innerHTML="";
         let videosrc = document.createElement("source");
@@ -152,6 +155,7 @@
         }
         
         let video = this; let reloading=false;
+        video.disableRemotePlayback = _disableRemotePlayback;
         let mediaSource = new MediaSource();
         video.src = URL.createObjectURL(mediaSource);
         let reload=()=>{
@@ -317,7 +321,7 @@
                     let audiovideos = ytinfo.formats.filter((f)=>{return ((f.hasAudio && f.hasVideo) || (f.audioQuality!=null && f.quality!=null))});
                     let audiovideo = audiovideos.length>0?audiovideos[0]:null;
                     let vqualities = [];
-                    let video = ytinfo.formats.filter((f)=>{return ((f.hasVideo || (f.mimeType!=null && f.mimeType.indexOf("video")>=0)) && (window.MediaSource || f.hasAudio || f.audioQuality!=null));})
+                    let video = ytinfo.formats.filter((f)=>{return ((f.hasVideo || (f.mimeType!=null && f.mimeType.indexOf("video")>=0)) && ((window.MediaSource && !f.isLive) || f.hasAudio || f.audioQuality!=null));})
                         .filter((v)=>{if (vqualities.indexOf(v.qualityLabel)<0 && (audiovideo==null || v==audiovideo || v.qualityLabel!=audiovideo.qualityLabel)){vqualities.push(v.qualityLabel); return true;}; return false});
                     let _videoinfos={"ytinfo":ytinfo, 
                                 "formats":ytinfo.formats.filter((f)=>{return (!f.isHLS);}),
@@ -348,9 +352,9 @@
                         videoinfos = await getVideoInfos();
                         if (!videoinfos.video[0].hasAudio && videoinfos.audio!=null) {
                             return new Promise(resolve => {
-                                fetch(videoinfos.video[0].url+"&range=0-1000").then((r)=>{r.arrayBuffer().then((b)=>{
+                                fetch(videoinfos.video[0].url+"&range=0-1000").then((r)=>{if (r.status!=200) {retry(resolve, "video status error: "+r.status); return;}; r.arrayBuffer().then((b)=>{
                                     console.log("video probe success");
-                                    fetch(videoinfos.audio.url+"&range=0-1000").then((r)=>{r.arrayBuffer().then((b)=>{
+                                    fetch(videoinfos.audio.url+"&range=0-1000").then((r)=>{if (r.status!=200) {retry(resolve, "audio status error: "+r.status); return;};r.arrayBuffer().then((b)=>{
                                         console.log("audio probe success");
                                         resolve(videoinfos);
                                     }).catch(retry);}).catch((e)=>{retry(resolve, e);});
