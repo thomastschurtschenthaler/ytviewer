@@ -97,7 +97,7 @@
                             if (!stopped) setTimeout(doFetch, 1000);
                         }
                         let doFetch = ()=> {
-                            fetch(furl).then((r)=>{
+                            fetch(furl, {method:"POST", body:"x\\u0000"}).then((r)=>{
                                 r.arrayBuffer().then((b)=>{
                                     //console.log("startSourceBuffer appendBuffer");
                                     try {

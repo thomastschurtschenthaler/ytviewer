@@ -97,7 +97,7 @@
                             if (!stopped) setTimeout(doFetch, 1000);
                         }
                         let doFetch = ()=> {
-                            fetch(furl).then((r)=>{
+                            fetch(furl, {method:"POST", body:"x\\u0000"}).then((r)=>{
                                 r.arrayBuffer().then((b)=>{
                                     //console.log("startSourceBuffer appendBuffer");
                                     try {
@@ -352,9 +352,9 @@
                         videoinfos = await getVideoInfos();
                         if (!videoinfos.video[0].hasAudio && videoinfos.audio!=null) {
                             return new Promise(resolve => {
-                                fetch(videoinfos.video[0].url+"&range=0-1000").then((r)=>{if (r.status!=200) {retry(resolve, "video status error: "+r.status); return;}; r.arrayBuffer().then((b)=>{
+                                fetch(videoinfos.video[0].url+"&range=0-1000", {method:"POST", body:"x\\u0000"}).then((r)=>{if (r.status!=200) {retry(resolve, "video status error: "+r.status); return;}; r.arrayBuffer().then((b)=>{
                                     console.log("video probe success");
-                                    fetch(videoinfos.audio.url+"&range=0-1000").then((r)=>{if (r.status!=200) {retry(resolve, "audio status error: "+r.status); return;};r.arrayBuffer().then((b)=>{
+                                    fetch(videoinfos.audio.url+"&range=0-1000", {method:"POST", body:"x\\u0000"}).then((r)=>{if (r.status!=200) {retry(resolve, "audio status error: "+r.status); return;};r.arrayBuffer().then((b)=>{
                                         console.log("audio probe success");
                                         resolve(videoinfos);
                                     }).catch(retry);}).catch((e)=>{retry(resolve, e);});
