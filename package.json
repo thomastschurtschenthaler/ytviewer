@@ -18,12 +18,13 @@
   ],
   "author": "Thomas Tschurtschenthaler",
   "dependencies": {
+    "@distube/ytdl-core": "4.13.5",
     "hls.js": "^1.5.2-0.canary.9888",
     "querystring-es3": "^0.2.1",
     "stream-browserify": "^3.0.0",
     "timers-browserify": "^2.0.12",
-    "vm-browserify": "^1.1.2",
-    "ytdl-core": "^4.11.5"
+    "util": "^0.12.5",
+    "vm-browserify": "^1.1.2"
   },
   "devDependencies": {
     "@webpack-cli/generators": "^3.0.7",
