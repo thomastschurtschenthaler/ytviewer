@@ -1,4 +1,4 @@
-window.ytdl = require("@distube/ytdl-core");
+window.ytdl = require("ytdl-core");
 window.Hls = require("hls.js");
 
 window.process = {

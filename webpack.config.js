@@ -43,18 +43,7 @@ const config = {
                     },
                   },
                 ],
-            },
-            {
-              test: /sig.js$/,
-              use: [
-                {
-                  loader: path.resolve('ytsigloader.js'),
-                  options: {
-                    /* ... */
-                  },
-                },
-              ],
-          },
+            }
         ],
     },
     resolve: {
@@ -62,7 +51,8 @@ const config = {
             "miniget": require.resolve("./src/miniget.js"),
             "fs": require.resolve("./src/fs.js"),
             "undici": require.resolve("./src/undici.js"),
-            "http-cookie-agent/undici": require.resolve("./src/cookie-agent.js")
+            "http-cookie-agent/undici": require.resolve("./src/cookie-agent.js"),
+            "./sig": require.resolve("@distube/ytdl-core/lib/sig.js")
         },
         fallback: {
             "vm": require.resolve("vm-browserify"),
